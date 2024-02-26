@@ -10,11 +10,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Main2 {
     private static final Random random = new Random();
     private static final int time = 1000;
-    private static int cleaners = 0;
-    private static int polishers = 0;
     //private static final Semaphore cleaners = new Semaphore();
     //private static final Semaphore polishers = new Semaphore();
-    private static final ReentrantLock lock = new ReentrantLock(true);
+    //private static final ReentrantLock lock = new ReentrantLock(true);
     private static final Semaphore maxWorkers = new Semaphore(10, true);
     private static final Lightswitch room = new Lightswitch();
 
@@ -58,19 +56,19 @@ public class Main2 {
             Stopwatch watch2 = new Stopwatch();
             maxWorkers.acquireUninterruptibly();
             double time = watch2.elapsedTime();
-            System.out.println("CLEANER THREAD" + " " + this.threadId() + " WAIT TIME - " + time);
+            System.out.println("CLEANER THREAD" + " " + this.getId() + " WAIT TIME - " + time);
 
-            room.lockRoom();
+            room.lockRoom(true);
             try {
                 Stopwatch watch3 = new Stopwatch();
-                System.out.println("CLEANER THREAD" + " " + this.threadId() + " STARTED");
+                System.out.println("CLEANER THREAD" + " " + this.getId() + " STARTED");
                 Thread.sleep(random.nextInt(10000) + 1);
                 double time2 = watch3.elapsedTime();
-                System.out.println("CLEANER THREAD" + " " + this.threadId() + " FINISHED TIME -  " + time2);
+                System.out.println("CLEANER THREAD" + " " + this.getId() + " FINISHED TIME -  " + time2);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                room.unlockRoom();
+                room.unlockRoom(true);
                 maxWorkers.release();
             }
         }
@@ -83,42 +81,67 @@ public class Main2 {
             Stopwatch watch4 = new Stopwatch();
             maxWorkers.acquireUninterruptibly();
             double time3 = watch4.elapsedTime();
-            System.out.println("POLISHER THREAD" + " " + this.threadId() + " WAIT TIME - " + time3);
-            room.lockRoom();
+            System.out.println("POLISHER THREAD" + " " + this.getId() + " WAIT TIME - " + time3);
+            room.lockRoom(false);
             try {
                 Stopwatch watch5 = new Stopwatch();
 
-                System.out.println("POLISHER THREAD" + " " + this.threadId() + " STARTED");
-                Thread.sleep(random.nextInt(10000) + 1);
+                System.out.println("POLISHER THREAD" + " " + this.getId() + " STARTED");
+                Thread.sleep(random.nextInt(100) + 1);
                 double time4 = watch5.elapsedTime();
-                System.out.println("CLEANER THREAD" + " " + this.threadId() + " FINISHED TIME -  " + time4);
+                System.out.println("POLISHER THREAD" + " " + this.getId() + " FINISHED TIME -  " + time4);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                room.unlockRoom();
+                room.unlockRoom(false);
                 maxWorkers.release();
             }
         }
     }
     private static class Lightswitch {
-        private int counter = 0;
-        private final Semaphore mutex;
+        private int counterCleaner = 0;
+        private int counterPolisher = 0;
+        private final Semaphore mutex = new Semaphore(1, true);
+        private final Semaphore turnstile = new Semaphore(1, true);
 
-        public Lightswitch() {
-            this.mutex = new Semaphore(1, true);
-        }
-
-        public synchronized void lockRoom() {
-            counter++;
-            if (counter == 1) {
-                mutex.acquireUninterruptibly();
+        public synchronized void lockRoom(Boolean check) {
+            try {
+                turnstile.acquireUninterruptibly();
+                if (check) {
+                    if (counterCleaner == 0) {
+                        mutex.acquireUninterruptibly();
+                    }
+                    counterCleaner++;
+                } else {
+                    if (counterPolisher == 0) {
+                        mutex.acquireUninterruptibly();
+                    }
+                    counterPolisher++;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                turnstile.release();
             }
         }
-
-        public synchronized void unlockRoom() {
-            counter--;
-            if (counter == 0) {
-                mutex.release();
+        public synchronized void unlockRoom(Boolean check) {
+            try {
+                turnstile.acquireUninterruptibly();
+                if (check) {
+                    if (counterCleaner == 0) {
+                        mutex.acquireUninterruptibly();
+                    }
+                    counterCleaner++;
+                } else {
+                    if (counterPolisher == 0) {
+                        mutex.acquireUninterruptibly();
+                    }
+                    counterPolisher++;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                turnstile.release();
             }
         }
     }
