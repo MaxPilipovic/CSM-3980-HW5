@@ -10,13 +10,13 @@ import java.util.concurrent.locks.ReentrantLock;
 //Deadlock and starvation free
 public class Main2 {
     private static final Random random = new Random();
-    private static final int time = 500;
+    private static final int time = 1000;
     private static final AtomicInteger threads = new AtomicInteger();
-    private static final int totalThreads = 20;
+    private static final int totalThreads = 25;
     //private static final Semaphore cleaners = new Semaphore();
     //private static final Semaphore polishers = new Semaphore();
     //private static final ReentrantLock lock = new ReentrantLock(true);
-    private static final Semaphore maxWorkers = new Semaphore(10, true);
+    private static final Semaphore maxWorkers = new Semaphore(5, true);
     private static final Lightswitch room = new Lightswitch();
 
 
