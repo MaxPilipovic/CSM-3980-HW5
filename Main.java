@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Main {
     private static final Random random = new Random();
     private static final int time = 1000;
-    private static final int totalThreads = 25;
+    private static final int totalThreads = 100;
     private static final AtomicInteger threads = new AtomicInteger();
     private static int cleaners = 0;
     private static int polishers = 0;
@@ -20,7 +20,7 @@ public class Main {
     //private static final Semaphore polishers = new Semaphore();
     private static final Lightswitch room = new Lightswitch();
     //private static final Semaphore mutex = new Semaphore(1, true);
-    private static final Semaphore maxWorkers = new Semaphore(5);
+    private static final Semaphore maxWorkers = new Semaphore(25);
 
 
     public static void main(String[] args) {

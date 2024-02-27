@@ -12,11 +12,11 @@ public class Main2 {
     private static final Random random = new Random();
     private static final int time = 1000;
     private static final AtomicInteger threads = new AtomicInteger();
-    private static final int totalThreads = 25;
+    private static final int totalThreads = 100;
     //private static final Semaphore cleaners = new Semaphore();
     //private static final Semaphore polishers = new Semaphore();
     //private static final ReentrantLock lock = new ReentrantLock(true);
-    private static final Semaphore maxWorkers = new Semaphore(5, true);
+    private static final Semaphore maxWorkers = new Semaphore(25, true);
     private static final Lightswitch room = new Lightswitch();
 
 
