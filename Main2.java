@@ -12,7 +12,7 @@ public class Main2 {
     private static final Random random = new Random();
     private static final int time = 1000;
     private static final AtomicInteger threads = new AtomicInteger();
-    private static final int totalThreads = 100;
+    private static final int totalThreads = 125;
     //private static final Semaphore cleaners = new Semaphore();
     //private static final Semaphore polishers = new Semaphore();
     //private static final ReentrantLock lock = new ReentrantLock(true);

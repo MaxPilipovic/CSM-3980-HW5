@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Main {
     private static final Random random = new Random();
     private static final int time = 1000;
-    private static final int totalThreads = 100;
+    private static final int totalThreads = 125;
     private static final AtomicInteger threads = new AtomicInteger();
     private static int cleaners = 0;
     private static int polishers = 0;
