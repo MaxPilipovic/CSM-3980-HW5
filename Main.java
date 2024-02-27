@@ -5,11 +5,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+
 //Deadlock free but can starve
 //Removed fair handling
 public class Main {
     private static final Random random = new Random();
-    private static final int time = 1000;
+    private static final int time = 500;
+    private static final int totalThreads = 20;
+    private static final AtomicInteger threads = new AtomicInteger();
     private static int cleaners = 0;
     private static int polishers = 0;
     //private static final Semaphore cleaners = new Semaphore();
@@ -22,26 +26,31 @@ public class Main {
     public static void main(String[] args) {
         Stopwatch watch = new Stopwatch();
         //int maxWorkers = 10;
-        int totalWorkers = 20;
         //int workers = 0;
         List<Thread> list = new ArrayList<>();
 
+        while (threads.get() < totalThreads) {
+            try {
+                Thread.sleep(time);
+                Random random = new Random();
+                int number = random.nextInt(2) + 1;
 
-        for (int i = 0; i < totalWorkers; i++) {
-            Random random = new Random();
-            int number = random.nextInt(2) + 1;
-
-            if (number == 1 ) { //Cleaner
-                Cleaner cleaner = new Cleaner();
-                cleaner.start();
-                list.add(cleaner);
-            }
-            else if (number == 2) { //Polisher
-                Polisher polisher = new Polisher();
-                polisher.start();
-                list.add(polisher);
+                if (number == 1) { //Cleaner
+                    Cleaner cleaner = new Cleaner();
+                    cleaner.start();
+                    list.add(cleaner);
+                } else if (number == 2) { //Polisher
+                    Polisher polisher = new Polisher();
+                    polisher.start();
+                    list.add(polisher);
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                threads.incrementAndGet();
             }
         }
+
         for (int i = 0; i < list.size(); i++) { //Loop to wait for each thread to finish and begin next
             try {
                 list.get(i).join();
@@ -50,6 +59,7 @@ public class Main {
             }
         }
         System.out.printf("Program took %f seconds\n", watch.elapsedTime());
+        System.out.println("Total threads created " + threads.get());
     }
 
     private static class Cleaner extends Thread {
@@ -60,7 +70,7 @@ public class Main {
             maxWorkers.acquireUninterruptibly();
             double time6 = watch6.elapsedTime();
             System.out.println("CLEANER THREAD" + " " + this.threadId() + " WAIT TIME - " + time6);
-            room.lockRoom();
+            room.lockRoom(true);
             try {
                 Stopwatch watch7 = new Stopwatch();
                 System.out.println("CLEANER THREAD" + " " + this.threadId() + " STARTED");
@@ -70,7 +80,7 @@ public class Main {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                room.unlockRoom();
+                room.unlockRoom(true);
                 maxWorkers.release();
             }
         }
@@ -84,7 +94,7 @@ public class Main {
             maxWorkers.acquireUninterruptibly();
             double time8 = watch8.elapsedTime();
             System.out.println("POLISHER THREAD" + " " + this.threadId() + " WAIT TIME - " + time8);
-            room.lockRoom();
+            room.lockRoom(false);
             try {
                 Stopwatch watch9 = new Stopwatch();
                 System.out.println("POLISHER THREAD" + " " + this.threadId() + " STARTED");
@@ -94,31 +104,45 @@ public class Main {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                room.unlockRoom();
+                room.unlockRoom(false);
                 maxWorkers.release();
             }
         }
     }
+
     private static class Lightswitch {
-        private int counter = 0;
-        private final Semaphore mutex;
+        private int counterCleaner = 0;
+        private int counterPolisher = 0;
+        private final Semaphore cleanerMutex = new Semaphore(1);
+        private final Semaphore polisherMutex = new Semaphore(1);
 
-        public Lightswitch() {
-            this.mutex = new Semaphore(1);
-        }
-
-        public synchronized void lockRoom() {
-            counter++;
-            if (counter == 1) {
-                mutex.acquireUninterruptibly();
+        public synchronized void lockRoom(Boolean check) {
+            if (check) {
+                counterCleaner++;
+                if (counterCleaner == 1) {
+                    polisherMutex.acquireUninterruptibly();
+                } else {
+                    counterPolisher++;
+                    if (counterPolisher == 1) {
+                        cleanerMutex.acquireUninterruptibly();
+                    }
+                }
             }
         }
 
-        public synchronized void unlockRoom() {
-            counter--;
-            if (counter == 0) {
-                mutex.release();
+        public synchronized void unlockRoom(Boolean check) {
+            if (check) {
+                counterCleaner--;
+                if (counterCleaner == 0) {
+                    polisherMutex.release();
+                } else {
+                    counterPolisher--;
+                    if (counterPolisher == 0) {
+                        cleanerMutex.release();
+                    }
+                }
             }
+
         }
     }
 }
