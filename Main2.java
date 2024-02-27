@@ -114,11 +114,11 @@ public class Main2 {
         private int counterPolisher = 0;
         private final Semaphore cleanerMutex = new Semaphore(1, true);
         private final Semaphore polisherMutex= new Semaphore(1, true);
-        private final Semaphore turnstile = new Semaphore(1, true);
+        private final ReentrantLock turnstile = new ReentrantLock(true);
 
         public synchronized void lockRoom(Boolean check) {
             try {
-                turnstile.acquireUninterruptibly();
+                turnstile.lock();
                 if (check) {
                     counterCleaner++;
                     if (counterCleaner == 1) {
@@ -133,13 +133,13 @@ public class Main2 {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
-                turnstile.release();
+                turnstile.unlock();
             }
         }
 
         public synchronized void unlockRoom(Boolean check) {
             try {
-                turnstile.acquireUninterruptibly();
+                turnstile.lock();
                 if (check) {
                     counterCleaner--;
                     if (counterCleaner == 0) {
@@ -154,7 +154,7 @@ public class Main2 {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
-                turnstile.release();
+                turnstile.unlock();
             }
         }
     }
