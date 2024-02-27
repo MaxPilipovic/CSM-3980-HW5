@@ -8,7 +8,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //Deadlock free but can starve
-//Removed fair handling
+//Removed fairness
 public class Main {
     private static final Random random = new Random();
     private static final int time = 500;
@@ -121,11 +121,11 @@ public class Main {
                 counterCleaner++;
                 if (counterCleaner == 1) {
                     polisherMutex.acquireUninterruptibly();
-                } else {
-                    counterPolisher++;
-                    if (counterPolisher == 1) {
-                        cleanerMutex.acquireUninterruptibly();
-                    }
+                }
+            } else {
+                counterPolisher++;
+                if (counterPolisher == 1) {
+                    cleanerMutex.acquireUninterruptibly();
                 }
             }
         }
@@ -135,14 +135,13 @@ public class Main {
                 counterCleaner--;
                 if (counterCleaner == 0) {
                     polisherMutex.release();
-                } else {
-                    counterPolisher--;
-                    if (counterPolisher == 0) {
-                        cleanerMutex.release();
-                    }
+                }
+            } else {
+                counterPolisher--;
+                if (counterPolisher == 0) {
+                    cleanerMutex.release();
                 }
             }
-
         }
     }
 }
