@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 //Removed fairness
 public class Main {
     private static final Random random = new Random();
-    private static final int time = 500;
-    private static final int totalThreads = 20;
+    private static final int time = 1000;
+    private static final int totalThreads = 25;
     private static final AtomicInteger threads = new AtomicInteger();
     private static int cleaners = 0;
     private static int polishers = 0;
@@ -20,7 +20,7 @@ public class Main {
     //private static final Semaphore polishers = new Semaphore();
     private static final Lightswitch room = new Lightswitch();
     //private static final Semaphore mutex = new Semaphore(1, true);
-    private static final Semaphore maxWorkers = new Semaphore(10);
+    private static final Semaphore maxWorkers = new Semaphore(5);
 
 
     public static void main(String[] args) {
