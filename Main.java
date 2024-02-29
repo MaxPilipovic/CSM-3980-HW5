@@ -90,6 +90,7 @@ public class Main {
 
         @Override
         public void run() {
+            //HERE
             Stopwatch watch8 = new Stopwatch();
             roomThreads.acquireUninterruptibly();
             double time8 = watch8.elapsedTime();
