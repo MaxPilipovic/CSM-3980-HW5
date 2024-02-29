@@ -20,7 +20,7 @@ public class Main {
     //private static final Semaphore polishers = new Semaphore();
     private static final Lightswitch room = new Lightswitch();
     //private static final Semaphore mutex = new Semaphore(1, true);
-    private static final Semaphore maxWorkers = new Semaphore(1);
+    private static final Semaphore roomThreads = new Semaphore(1);
 
 
     public static void main(String[] args) {
@@ -67,7 +67,7 @@ public class Main {
         @Override
         public void run() {
             Stopwatch watch6 = new Stopwatch();
-            maxWorkers.acquireUninterruptibly();
+            roomThreads.acquireUninterruptibly();
             double time6 = watch6.elapsedTime();
             System.out.println("CLEANER THREAD" + " " + this.threadId() + " WAIT TIME - " + time6);
             room.lockRoom(true);
@@ -81,7 +81,7 @@ public class Main {
                 e.printStackTrace();
             } finally {
                 room.unlockRoom(true);
-                maxWorkers.release();
+                roomThreads.release();
             }
         }
     }
@@ -91,7 +91,7 @@ public class Main {
         @Override
         public void run() {
             Stopwatch watch8 = new Stopwatch();
-            maxWorkers.acquireUninterruptibly();
+            roomThreads.acquireUninterruptibly();
             double time8 = watch8.elapsedTime();
             System.out.println("POLISHER THREAD" + " " + this.threadId() + " WAIT TIME - " + time8);
             room.lockRoom(false);
@@ -105,7 +105,7 @@ public class Main {
                 e.printStackTrace();
             } finally {
                 room.unlockRoom(false);
-                maxWorkers.release();
+                roomThreads.release();
             }
         }
     }

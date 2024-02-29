@@ -16,7 +16,7 @@ public class Main2 {
     //private static final Semaphore cleaners = new Semaphore();
     //private static final Semaphore polishers = new Semaphore();
     //private static final ReentrantLock lock = new ReentrantLock(true);
-    private static final Semaphore maxWorkers = new Semaphore(1, true);
+    private static final Semaphore roomThreads = new Semaphore(1, true);
     private static final Lightswitch room = new Lightswitch();
 
 
@@ -64,7 +64,7 @@ public class Main2 {
         @Override
         public void run() {
             Stopwatch watch2 = new Stopwatch();
-            maxWorkers.acquireUninterruptibly();
+            roomThreads.acquireUninterruptibly();
             double time = watch2.elapsedTime();
             System.out.println("CLEANER THREAD" + " " + this.threadId() + " WAIT TIME - " + time);
 
@@ -79,7 +79,7 @@ public class Main2 {
                 e.printStackTrace();
             } finally {
                 room.unlockRoom(true);
-                maxWorkers.release();
+                roomThreads.release();
             }
         }
     }
@@ -89,7 +89,7 @@ public class Main2 {
         @Override
         public void run() {
             Stopwatch watch4 = new Stopwatch();
-            maxWorkers.acquireUninterruptibly();
+            roomThreads.acquireUninterruptibly();
             double time3 = watch4.elapsedTime();
             System.out.println("POLISHER THREAD" + " " + this.threadId() + " WAIT TIME - " + time3);
             room.lockRoom(false);
@@ -104,7 +104,7 @@ public class Main2 {
                 e.printStackTrace();
             } finally {
                 room.unlockRoom(false);
-                maxWorkers.release();
+                roomThreads.release();
             }
         }
     }
