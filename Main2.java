@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 //Deadlock and starvation free
 public class Main2 {
     private static final Random random = new Random();
-    private static final int time = 1000;
+    private static final int time = 100;
     private static final AtomicInteger threads = new AtomicInteger();
     private static final int totalThreads = 5;
     //private static final Semaphore cleaners = new Semaphore();
